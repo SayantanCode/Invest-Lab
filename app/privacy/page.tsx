@@ -1,6 +1,6 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
-import { Calculator } from "lucide-react";
 
 import { SITE_NAME } from "@/lib/site-config";
 
@@ -26,9 +26,7 @@ export default function PrivacyPolicy() {
       <header className="border-b">
         <div className="mx-auto flex h-14 max-w-3xl items-center gap-2 px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2">
-            <span className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
-              <Calculator className="size-4" />
-            </span>
+            <Image src="/investlab-logo.png" alt="" width={28} height={28} className="shrink-0" />
             <span className="font-semibold tracking-tight">{SITE_NAME}</span>
           </Link>
         </div>

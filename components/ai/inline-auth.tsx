@@ -243,7 +243,7 @@ export function InlineAuth({ intro }: { intro?: string } = {}) {
   }
 
   return (
-    <div className="grid gap-4 py-1">
+    <div className="grid gap-4 py-1 px-5 sm:py-2 ">
       <div className="flex items-start gap-3">
         <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
           <LockKeyhole className="size-4.5 text-primary" />

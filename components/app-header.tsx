@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Bot, Calculator, CloudSync, Menu, Plus } from "lucide-react";
+import Image from "next/image";
+import { Bot, CloudSync, Menu, Plus } from "lucide-react";
 
 import { useAiPanelOpen } from "@/lib/stores/use-ai-panel-store";
 import { cn } from "@/lib/utils";
@@ -51,9 +52,7 @@ export function AppHeader({
               <Menu className="size-4" />
             </Button>
           )}
-          <span className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <Calculator className="size-4" />
-          </span>
+          <Image src="/investlab-logo.png" alt="" width={28} height={28} className="shrink-0" priority />
           <span className="font-semibold tracking-tight">InvestLab</span>
           <span className="hidden text-xs text-muted-foreground sm:inline">
             Plan. Simulate. Grow.

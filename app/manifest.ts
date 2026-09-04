@@ -10,8 +10,9 @@ export default function manifest(): MetadataRoute.Manifest {
     display: "standalone",
     background_color: "#f4f7ff",
     theme_color: "#315dd4",
-    // icon.tsx already generates a 32x32 PNG at /icon — reused here rather
-    // than duplicating another image just for the manifest.
-    icons: [{ src: "/icon", sizes: "32x32", type: "image/png" }],
+    icons: [
+      { src: "/web-app-manifest-192x192.png", sizes: "192x192", type: "image/png", purpose: "maskable" },
+      { src: "/web-app-manifest-512x512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+    ],
   };
 }

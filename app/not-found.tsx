@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Calculator, Home } from "lucide-react";
+import Image from "next/image";
+import { Home } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -10,9 +11,7 @@ import { Button } from "@/components/ui/button";
 export default function NotFound() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background px-4 text-center">
-      <span className="flex size-14 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-        <Calculator className="size-7" />
-      </span>
+      <Image src="/investlab-logo.png" alt="" width={56} height={56} priority />
       <div className="grid gap-2">
         <p className="text-sm font-medium text-muted-foreground">404</p>
         <h1 className="text-2xl font-semibold tracking-tight text-balance">Page not found</h1>

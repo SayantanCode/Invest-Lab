@@ -1,11 +1,15 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { ImageResponse } from "next/og";
 
-// Social share-card preview (WhatsApp/X/LinkedIn/Slack link unfurls). Same
-// "inline the SVG, don't import lucide-react" reasoning as app/icon.tsx —
-// this route runs in a server-only context that can't call lucide-react's
-// (client-marked) icon components.
+// Social share-card preview (WhatsApp/X/LinkedIn/Slack link unfurls). The
+// logo is read from disk and inlined as a base64 data URI — ImageResponse's
+// Satori renderer can't resolve a plain "/investlab-logo.png" URL at build
+// time, so the bytes have to be embedded directly into the <img src>.
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+
+const logoDataUri = `data:image/png;base64,${readFileSync(join(process.cwd(), "public", "investlab-logo.png")).toString("base64")}`;
 
 export default function OpengraphImage() {
   return new ImageResponse(
@@ -25,30 +29,8 @@ export default function OpengraphImage() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 84,
-              height: 84,
-              borderRadius: 20,
-              background: "#315dd4",
-            }}
-          >
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-              <rect width="16" height="20" x="4" y="2" rx="2" />
-              <line x1="8" x2="16" y1="6" y2="6" />
-              <line x1="16" x2="16" y1="14" y2="18" />
-              <path d="M16 10h.01" />
-              <path d="M12 10h.01" />
-              <path d="M8 10h.01" />
-              <path d="M12 14h.01" />
-              <path d="M8 14h.01" />
-              <path d="M12 18h.01" />
-              <path d="M8 18h.01" />
-            </svg>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element -- ImageResponse (Satori) requires a plain <img>, not next/image */}
+          <img src={logoDataUri} width={84} height={84} alt="" />
           <div style={{ display: "flex", fontSize: 56, fontWeight: 700, color: "#0f172a", letterSpacing: -1.5 }}>InvestLab</div>
         </div>
 
