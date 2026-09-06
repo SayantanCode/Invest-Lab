@@ -6,7 +6,6 @@ import connectToDatabase from "@/lib/server/mongoose";
 import { getDb } from "@/lib/server/mongodb";
 import { LocalCredentialModel } from "@/lib/models/local-credential";
 import { PendingSignupModel } from "@/lib/models/pending-signup";
-import { emailProvider } from "@/lib/server/auth-lookup";
 
 const bodySchema = z.object({
   email: z.email(),
@@ -23,10 +22,12 @@ export async function POST(request: Request) {
   const { code } = parsed.data;
 
   await connectToDatabase;
+  
+  // Get the pending signup record
   const pending = await PendingSignupModel.findOne({ email });
   if (!pending) {
     return NextResponse.json(
-      { error: "No signup in progress for this email — request a new code." },
+      { error: "No verification in progress for this email — request a new code." },
       { status: 404 }
     );
   }
@@ -48,47 +49,32 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "That code doesn't match." }, { status: 400 });
   }
 
-  // Verified — create the real, permanent account. Insert into the
-  // adapter's own native `users` collection (not Mongoose) so the shape
-  // matches exactly what @auth/mongodb-adapter already produces for Google
-  // sign-ins, keeping every login method interchangeable afterward.
-  const existingCred = await LocalCredentialModel.findOne({ email }).lean();
-  if (existingCred) {
+  // Verified — update the account status to verified
+  const localCred = await LocalCredentialModel.findOne({ email });
+  if (!localCred) {
     await pending.deleteOne();
-    return NextResponse.json(
-      { error: "An account already exists for this email — try signing in instead." },
-      { status: 409 }
-    );
+    return NextResponse.json({ error: "Account not found — try signing up again." }, { status: 404 });
   }
 
-  if ((await emailProvider(email)) === "google") {
+  // Check if already verified
+  if (localCred.status === "verified") {
     await pending.deleteOne();
-    return NextResponse.json(
-      { error: 'This email is already registered with Google — use "Continue with Google" instead.' },
-      { status: 409 }
-    );
+    return NextResponse.json({ error: "Account already verified — proceed to login." }, { status: 400 });
   }
 
+  // Update local credential to verified
+  localCred.status = "verified";
+  localCred.verificationExpiresAt = null;
+  await localCred.save();
+
+  // Update the user's emailVerified field in NextAuth collection
   const db = await getDb();
-  const userResult = await db.collection("users").insertOne({
-    name: email.split("@")[0],
-    email,
-    emailVerified: null, // Account not verified until OTP is confirmed
-    image: null,
-  });
-
-  const verificationExpiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48 hours
-  
-  await LocalCredentialModel.create({
-    userId: userResult.insertedId.toString(),
-    email,
-    passwordHash: pending.passwordHash,
-    status: "pending",
-    verificationExpiresAt,
-    createdAt: new Date().toISOString(),
-  });
+  await db.collection("users").updateOne(
+    { _id: localCred.userId },
+    { $set: { emailVerified: new Date() } }
+  );
 
   await pending.deleteOne();
 
-  return NextResponse.json({ ok: true, userId: userResult.insertedId.toString() });
+  return NextResponse.json({ ok: true, email });
 }

@@ -20,6 +20,11 @@ export class GoogleAccountError extends CredentialsSignin {
   code = "google_only";
 }
 
+// Thrown when account exists but email is not yet verified
+export class UnverifiedAccountError extends CredentialsSignin {
+  code = "unverified_account";
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: MongoDBAdapter(clientPromise),
   providers: [
@@ -34,7 +39,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!email || !password) return null;
 
         await connectToDatabase;
-        const cred = await LocalCredentialModel.findOne({ email }).lean<{ userId: string; passwordHash: string }>();
+        const cred = await LocalCredentialModel.findOne({ email }).lean<{ 
+          userId: string; 
+          passwordHash: string;
+          status: string;
+          verificationExpiresAt?: Date;
+        }>();
         if (!cred) {
           if ((await emailProvider(email)) === "google") throw new GoogleAccountError();
           return null;
@@ -42,6 +52,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const valid = await bcrypt.compare(password, cred.passwordHash);
         if (!valid) return null;
+
+        // Check if account is verified
+        if (cred.status === "pending") {
+          throw new UnverifiedAccountError();
+        }
 
         // The credential's userId points at a document in the adapter's own
         // native `users` collection (see verify-otp/route.ts, which creates

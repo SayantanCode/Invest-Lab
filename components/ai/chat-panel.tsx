@@ -31,7 +31,7 @@ import type { View } from "@/lib/app-view";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "../ui/textarea";
 
 /** Sent messages can't exceed this — keeps a stray huge paste from ballooning input-token cost. */
 const MAX_MESSAGE_LENGTH = 500;
@@ -375,6 +375,7 @@ function Markdown({ text }: { text: string }) {
 }
 
 export function ChatPanel({ messagesClassName }: { messagesClassName?: string }) {
+  const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const { goals, saveGoal, updateGoal } = useGoalStore();
   const { profile, saveProfile } = useProfileStore();
   const { plans, createPlan } = useSavedPlansStore();
@@ -399,7 +400,7 @@ export function ChatPanel({ messagesClassName }: { messagesClassName?: string })
     [plans]
   );
   const [input, setInput] = React.useState("");
-  const inputRef = React.useRef<HTMLInputElement>(null);
+  const inputRef = React.useRef<HTMLTextAreaElement>(null);
   const [activePromptIndex, setActivePromptIndex] = React.useState(0);
   const goToPrompt = React.useCallback((index: number) => {
     setActivePromptIndex(((index % EXAMPLE_PROMPTS.length) + EXAMPLE_PROMPTS.length) % EXAMPLE_PROMPTS.length);
@@ -525,6 +526,11 @@ export function ChatPanel({ messagesClassName }: { messagesClassName?: string })
       }
     }
   }, [messages, addToolOutput]);
+
+  // Auto-scroll to bottom whenever messages list updates or status changes
+  React.useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, chatStatus]);
 
   function handleConfirmSetup(toolCallId: string, proposed: { profile?: ProposedProfile; goals: ProposedGoal[] }) {
     if (proposed.profile) {
@@ -1158,6 +1164,9 @@ export function ChatPanel({ messagesClassName }: { messagesClassName?: string })
           {errorMessage}
         </p>
       )}
+
+      {/* Scroll anchor */}
+      <div ref={messagesEndRef} />
     </div>
 
     {/* Composer */}
@@ -1173,81 +1182,142 @@ export function ChatPanel({ messagesClassName }: { messagesClassName?: string })
       {blockedMessage && (
         <p className="mb-1.5 px-1 text-xs text-negative">{blockedMessage}</p>
       )}
-      <div className="flex items-center gap-2">
-        <Input
-          value={input}
-          onChange={(e) => {
-            setInput(e.target.value);
-            if (blockedMessage) setBlockedMessage(null);
-          }}
-          placeholder={listening ? "Listening…" : quotaExhausted ? "Come back once the quota resets…" : "Ask about your plan…"}
-          maxLength={MAX_MESSAGE_LENGTH}
-          disabled={
-            chatStatus === "streaming" ||
-            chatStatus === "submitted" ||
-            quotaExhausted
-          }
-          autoFocus
-          ref={inputRef}
-          className="h-10 rounded-lg bg-background"
-        />
+      <div className="rounded-2xl border bg-background shadow-sm transition-shadow focus-within:shadow-md">
+  {/* Input */}
+  <div className="px-3 pt-3">
+    <Textarea
+  value={input}
+  onChange={(e) => {
+    setInput(e.target.value);
+    if (blockedMessage) setBlockedMessage(null);
 
-        {voiceSupported && (
-          <Button
-            type="button"
-            variant={listening ? "default" : "outline"}
-            size="icon"
-            className="size-10 shrink-0 rounded-lg"
-            disabled={chatStatus === "streaming" || chatStatus === "submitted" || quotaExhausted}
-            onClick={toggleListening}
-            aria-label={listening ? "Stop voice input" : "Start voice input"}
-          >
-            {listening ? <Square className="size-3.5" /> : <Mic className="size-4" />}
-          </Button>
-        )}
+    // Auto-grow
+    e.target.style.height = "auto";
+    e.target.style.height = `${Math.min(e.target.scrollHeight, 160)}px`;
+  }}
+  onKeyDown={(e) => {
+    // Enter = send
+    // Shift + Enter = new line
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
 
+      if (
+        input.trim() &&
+        chatStatus !== "streaming" &&
+        chatStatus !== "submitted" &&
+        !quotaExhausted
+      ) {
+        e.currentTarget.form?.requestSubmit();
+      }
+    }
+  }}
+  placeholder={
+    listening
+      ? "Listening…"
+      : quotaExhausted
+        ? "Come back once the quota resets…"
+        : "Ask about your plan…"
+  }
+  maxLength={MAX_MESSAGE_LENGTH}
+  disabled={
+    chatStatus === "streaming" ||
+    chatStatus === "submitted" ||
+    quotaExhausted
+  }
+  autoFocus
+  ref={inputRef}
+  rows={1}
+  className="max-h-40 min-h-9 resize-none overflow-y-auto border-0 bg-transparent px-0 py-0 text-sm leading-6 shadow-none focus-visible:ring-0"
+/>
+  </div>
+
+  {/* Bottom toolbar */}
+  <div className="flex items-center justify-between gap-2 px-2 pb-2 pt-2">
+    {/* Left actions */}
+    <div className="flex min-w-0 items-center gap-1">
+      {messages.length > 0 && (
         <Button
-          type="submit"
-          size="icon"
-          className="size-10 shrink-0 rounded-lg"
-          disabled={
-            !input.trim() ||
-            chatStatus === "streaming" ||
-            chatStatus === "submitted" ||
-            quotaExhausted
-          }
-          aria-label="Send"
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={handleClearHistory}
+          className="h-7 gap-1.5 px-2 text-[11px] text-muted-foreground hover:text-foreground"
         >
-          <Send className="size-4" />
+          <Trash2 className="size-3" />
+          <span className="hidden sm:inline">Clear chat</span>
         </Button>
-      </div>
-      <div className="mt-1 flex items-center justify-between gap-2 text-[10px] text-muted-foreground">
-        <div className="flex items-center gap-2.5">
-          {messages.length > 0 && (
-            <button
-              type="button"
-              onClick={handleClearHistory}
-              className="flex items-center gap-1 hover:text-foreground hover:underline"
-            >
-              <Trash2 className="size-2.5" />
-              Clear chat
-            </button>
-          )}
-          {quota && (
-            <span className={cn("tabular-nums", quota.remaining === 0 && "text-negative")}>
-              {quota.remaining}/{quota.limit} left today
-            </span>
-          )}
-        </div>
+      )}
+
+      {quota && (
         <span
           className={cn(
-            "shrink-0 tabular-nums",
-            input.length >= MAX_MESSAGE_LENGTH && "text-negative"
+            "ml-1 whitespace-nowrap px-1 text-[10px] tabular-nums text-muted-foreground",
+            quota.remaining === 0 && "text-negative"
           )}
         >
-          {input.length}/{MAX_MESSAGE_LENGTH}
+          {quota.remaining}/{quota.limit} left
         </span>
-      </div>
+      )}
+    </div>
+
+    {/* Right actions */}
+    <div className="flex shrink-0 items-center gap-1">
+      {/* Character count */}
+      <span
+        className={cn(
+          "mr-1 text-[10px] tabular-nums text-muted-foreground",
+          input.length >= MAX_MESSAGE_LENGTH && "text-negative"
+        )}
+      >
+        {input.length}/{MAX_MESSAGE_LENGTH}
+      </span>
+
+      {/* Voice */}
+      {voiceSupported && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "size-8 rounded-lg",
+            listening && "bg-muted text-foreground"
+          )}
+          disabled={
+            chatStatus === "streaming" ||
+            chatStatus === "submitted" ||
+            quotaExhausted
+          }
+          onClick={toggleListening}
+          aria-label={
+            listening ? "Stop voice input" : "Start voice input"
+          }
+        >
+          {listening ? (
+            <Square className="size-3.5" />
+          ) : (
+            <Mic className="size-4" />
+          )}
+        </Button>
+      )}
+
+      {/* Send */}
+      <Button
+        type="submit"
+        size="icon"
+        className="size-8 rounded-lg"
+        disabled={
+          !input.trim() ||
+          chatStatus === "streaming" ||
+          chatStatus === "submitted" ||
+          quotaExhausted
+        }
+        aria-label="Send"
+      >
+        <Send className="size-4" />
+      </Button>
+    </div>
+  </div>
+</div>
     </form>
   </div>
 );

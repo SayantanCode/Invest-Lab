@@ -12,7 +12,7 @@ import { emailProvider } from "@/lib/server/auth-lookup";
 import { getPasswordIssues } from "@/lib/password-policy";
 
 const bodySchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   password: z.string().min(1),
 });
 
@@ -59,6 +59,17 @@ export async function POST(request: Request) {
   const otpHash = crypto.createHash("sha256").update(code).digest("hex");
   const passwordHash = await bcrypt.hash(password, 10);
 
+  // Check if this is a resend attempt
+  const existingPending = await PendingSignupModel.findOne({ email }).lean();
+  const resendCount = existingPending?.resendCount ?? 0;
+  
+  if (resendCount >= 3) {
+    return NextResponse.json(
+      { error: "Maximum OTP resend attempts reached — try again in 24 hours." },
+      { status: 429 }
+    );
+  }
+
   await PendingSignupModel.findOneAndUpdate(
     { email },
     {
@@ -67,6 +78,7 @@ export async function POST(request: Request) {
       otpHash,
       expiresAt: new Date(Date.now() + 10 * 60 * 1000),
       attempts: 0,
+      resendCount: resendCount + 1,
     },
     { upsert: true }
   );

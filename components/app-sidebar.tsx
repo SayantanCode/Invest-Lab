@@ -95,7 +95,7 @@ function writeCollapsed(next: boolean) {
 }
 
 // Most items switch the SPA's internal `view` state; a few (Privacy Policy)
-// are real routes outside that system entirely (see app/privacy/page.tsx's
+// are real routes outside that system entirely (see app/privacy-policy/page.tsx's
 // own comment on why it's a standalone page, not a `view`) and just need a
 // plain external link styled to match.
 type NavItem = { label: string; icon: LucideIcon } & ({ view: View; href?: never } | { view?: never; href: string });
@@ -232,7 +232,7 @@ const SECTIONS: { label: string; items: NavItem[] }[] = [
 const FOOTER_ITEMS: NavItem[] = [
   { label: "Settings", icon: Settings, view: { kind: "settings" } },
   { label: "Help & Support", icon: HelpCircle, view: { kind: "help" } },
-  { label: "Privacy Policy", icon: ScrollText, href: "/privacy" },
+  { label: "Privacy Policy", icon: ScrollText, href: "/privacy-policy" },
 ];
 
 function isActive(a: View, b: View): boolean {

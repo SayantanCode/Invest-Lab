@@ -280,29 +280,20 @@
   }
 }
 
-/* =========================================================
-   AI ASSISTANT BUTTON GLOW
-   ========================================================= */
-
-@keyframes ai-button-glow {
+@keyframes aiShimmer {
   0%,
+  70%,
   100% {
-    opacity: 0.45;
-    transform: scale(0.85);
+    transform: translateX(-100%);
+    opacity: 0;
   }
-  50% {
-    opacity: 0.9;
-    transform: scale(1.2);
+
+  78% {
+    opacity: 0.35;
   }
-}
 
-.ai-button-glow {
-  animation: ai-button-glow 2.6s ease-in-out infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ai-button-glow {
-    animation: none;
-    opacity: 0.65;
+  88% {
+    transform: translateX(100%);
+    opacity: 0;
   }
 }

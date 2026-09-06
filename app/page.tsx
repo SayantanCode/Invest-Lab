@@ -296,7 +296,7 @@ export default function Home() {
               published NAV feed); InvestLab is not affiliated with AMFI, SEBI, or any AMC, and data may lag by a
               day. Nothing here is a recommendation to buy or sell any fund.
             </p>
-            <Link href="/privacy" className="mt-2 inline-block underline underline-offset-2 hover:text-foreground">
+            <Link href="/privacy-policy" className="mt-2 inline-block underline underline-offset-2 hover:text-foreground">
               Privacy Policy
             </Link>
           </footer>

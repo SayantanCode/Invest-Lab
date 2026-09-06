@@ -9,7 +9,7 @@ import { PasswordResetModel } from "@/lib/models/password-reset";
 import { getPasswordIssues } from "@/lib/password-policy";
 
 const bodySchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   code: z.string().length(6),
   newPassword: z.string().min(1),
 });

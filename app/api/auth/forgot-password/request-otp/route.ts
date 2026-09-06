@@ -10,7 +10,7 @@ import { sendPasswordResetEmail } from "@/lib/server/email";
 import { emailProvider } from "@/lib/server/auth-lookup";
 
 const bodySchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
 });
 
 export async function POST(request: Request) {

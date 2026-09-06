@@ -15,6 +15,8 @@ const LocalCredentialSchema = new Schema(
     userId: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     passwordHash: { type: String, required: true },
+    status: { type: String, enum: ["pending", "verified"], default: "pending" },
+    verificationExpiresAt: { type: Date, required: false },
     createdAt: { type: String, required: true },
   },
   { versionKey: false }

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { Bot, CloudSync, Menu, Plus } from "lucide-react";
+import { Bot, CloudSync, Menu, Plus, Sparkles } from "lucide-react";
 
 import { useAiPanelOpen } from "@/lib/stores/use-ai-panel-store";
 import { cn } from "@/lib/utils";
@@ -52,7 +52,14 @@ export function AppHeader({
               <Menu className="size-4" />
             </Button>
           )}
-          <Image src="/investlab-logo.png" alt="" width={28} height={28} className="shrink-0" priority />
+          <Image
+            src="/investlab-logo.png"
+            alt=""
+            width={28}
+            height={28}
+            className="shrink-0"
+            priority
+          />
           <span className="font-semibold tracking-tight">InvestLab</span>
           <span className="hidden text-xs text-muted-foreground sm:inline">
             Plan. Simulate. Grow.
@@ -90,48 +97,45 @@ export function AppHeader({
                 aria-label="Open InvestLab AI"
                 onClick={() => setAiPanelOpen(!aiPanelOpen)}
                 className={cn(
-                  "group relative h-9 gap-2 overflow-hidden rounded-lg px-2.5",
-                  "border border-transparent",
+                  "group relative h-9 gap-2 overflow-hidden rounded-xl px-3",
+                  "border border-border/60",
+                  "bg-background/70",
+                  "text-muted-foreground",
+                  "shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_1px_2px_rgba(0,0,0,0.15)]",
                   "transition-all duration-300",
-                  "hover:border-primary/20 hover:bg-primary/5",
+                  "hover:border-primary/25 hover:text-foreground",
+                  "hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_2px_8px_rgba(0,0,0,0.18)]",
                   aiPanelOpen &&
-                    "border-primary/20 bg-primary/10 text-primary shadow-sm",
+                    "border-primary/30 bg-primary/5 text-primary shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_2px_10px_rgba(59,130,246,0.12)]",
                 )}
               >
-                {/* Ambient glow */}
+                {/* Very subtle animated gradient wash */}
                 <span
                   aria-hidden="true"
                   className={cn(
-                    "pointer-events-none absolute -inset-3 rounded-full",
-                    "bg-linear-to-r from-primary/20 via-fuchsia-500/20 to-amber-400/20",
-                    "opacity-0 blur-xl transition-opacity duration-500",
+                    "pointer-events-none absolute inset-0",
+                    "bg-linear-to-r from-primary/0 via-primary/8 to-violet-500/0",
+                    "opacity-0",
+                    "animate-[aiShimmer_7s_ease-in-out_infinite]",
                     "group-hover:opacity-100",
                     aiPanelOpen && "opacity-100",
                   )}
                 />
 
-                {/* AI icon container */}
-                <span
-                  className={cn(
-                    "relative flex size-6 items-center justify-center rounded-md",
-                    "bg-linear-to-br from-primary via-fuchsia-500 to-amber-400",
-                    "text-white shadow-sm",
-                    "transition-transform duration-300",
-                    "group-hover:scale-105",
-                    aiPanelOpen && "scale-105",
-                  )}
-                >
-                  <Bot className="size-3.5" />
-
-                  {/* tiny sparkle */}
-                  <span
-                    aria-hidden="true"
-                    className="absolute -right-0.5 -top-0.5 size-1.5 rounded-full bg-white shadow-[0_0_6px_white]"
+                {/* Icon */}
+                <span className="relative flex size-4 items-center justify-center">
+                  <Sparkles
+                    className={cn(
+                      "size-4 transition-all duration-300",
+                      "group-hover:text-primary group-hover:drop-shadow-[0_0_5px_rgba(99,102,241,0.45)]",
+                      aiPanelOpen &&
+                        "text-primary drop-shadow-[0_0_5px_rgba(99,102,241,0.4)]",
+                    )}
                   />
                 </span>
 
                 {/* Label */}
-                <span className="relative hidden text-xs font-medium sm:inline">
+                <span className="relative text-xs font-medium tracking-tight">
                   AI
                 </span>
               </Button>

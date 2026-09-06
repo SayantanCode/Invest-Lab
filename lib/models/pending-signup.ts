@@ -13,6 +13,7 @@ const PendingSignupSchema = new Schema(
     otpHash: { type: String, required: true },
     expiresAt: { type: Date, required: true },
     attempts: { type: Number, required: true, default: 0 },
+    resendCount: { type: Number, required: true, default: 0 },
   },
   { timestamps: true, versionKey: false }
 );

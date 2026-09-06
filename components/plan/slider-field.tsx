@@ -33,8 +33,14 @@ export function SliderField({
 }) {
   return (
     <div className="grid min-w-0 gap-2.5">
-      <div className="flex min-w-0 items-baseline justify-between gap-3">
-        <Label htmlFor={id} className={cn("min-w-0 truncate", size === "sm" && "text-xs text-muted-foreground")}>
+      <div className="flex items-center justify-between gap-3">
+        <Label
+          htmlFor={id}
+          className={cn(
+            "whitespace-normal wrap-break-word",
+            size === "sm" && "text-xs text-muted-foreground"
+          )}
+        >
           {label}
         </Label>
         <div className="flex shrink-0 items-center gap-1 rounded-md border border-input bg-transparent px-1.5 focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50">
